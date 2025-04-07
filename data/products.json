@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "title": "Mouse gamer",
+    "description": "Mouse con luces RGB",
+    "price": 5500,
+    "thumbnail": [
+      "mouse1.png"
+    ],
+    "code": "MOU123",
+    "stock": 20
+  }
+]
