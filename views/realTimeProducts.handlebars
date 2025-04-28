@@ -1,0 +1,28 @@
+{{!-- views/realTimeProducts.handlebars --}}
+<h1>Productos en Tiempo Real</h1>
+<ul id="productList">
+  {{#each products}}
+    <li data-id="{{this.id}}">{{this.name}} - ${{this.price}}</li>
+  {{/each}}
+</ul>
+
+<!-- Incluir la librería de cliente Socket.IO -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io(); // Conecta al servidor Socket.IO
+
+  // Escuchar evento de nuevo producto
+  socket.on('new-product', (prod) => {
+    const list = document.getElementById('productList');
+    const item = document.createElement('li');
+    item.setAttribute('data-id', prod.id);
+    item.textContent = `${prod.name} - $${prod.price}`;
+    list.appendChild(item);
+  });
+
+  // Escuchar evento de eliminación de producto
+  socket.on('delete-product', (id) => {
+    const item = document.querySelector(`[data-id="${id}"]`);
+    if (item) item.remove();
+  });
+</script>

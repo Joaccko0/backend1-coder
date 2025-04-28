@@ -1,0 +1,7 @@
+{{!-- views/home.handlebars --}}
+<h1>Listado de Productos</h1>
+<ul>
+  {{#each products}}
+    <li>{{this.name}} - ${{this.price}}</li>
+  {{/each}}
+</ul>
