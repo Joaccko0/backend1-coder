@@ -1,61 +1,92 @@
-{{!-- views/realTimeProducts.handlebars --}}
-<h1>Productos en Tiempo Real</h1>
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Agregar Producto</h5>
+    <form id="addProductForm" class="row g-2">
+      <div class="col-md-6">
+        <input name="title" class="form-control" placeholder="Título" required>
+      </div>
+      <div class="col-md-6">
+        <input name="price" type="number" class="form-control" placeholder="Precio" required>
+      </div>
+      <div class="col-12">
+        <input name="description" class="form-control" placeholder="Descripción" required>
+      </div>
+      <div class="col-md-4">
+        <input name="code" class="form-control" placeholder="Código" required>
+      </div>
+      <div class="col-md-4">
+        <input name="stock" type="number" class="form-control" placeholder="Stock" required>
+      </div>
+      <div class="col-md-4">
+        <input name="category" class="form-control" placeholder="Categoría" required>
+      </div>
+      <div class="col-12 text-end">
+        <button class="btn btn-primary">Agregar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-<form id="addProductForm">
-  <input name="title" placeholder="Título" required>
-  <input name="description" placeholder="Descripción" required>
-  <input name="price" type="number" placeholder="Precio" required>
-  <input name="code" placeholder="Código" required>
-  <input name="stock" type="number" placeholder="Stock" required>
-  <input name="category" placeholder="Categoría" required>
-  <button type="submit">Agregar producto</button>
-</form>
+<div id="alerts"></div>
 
-<ul id="productList">
+<h2 class="mb-3">📦 Productos (en vivo)</h2>
+<div id="productGrid" class="row row-cols-1 row-cols-md-3 g-4">
+  {{!-- el grid inicial igual que en home pero con id en el div col --}}
   {{#each products}}
-    <li data-id="{{this.id}}">
-      {{this.title}} - ${{this.price}}
-      <button class="deleteBtn" data-id="{{this.id}}">Eliminar</button>
-    </li>
+    <div class="col" id="prod-{{this.id}}">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{this.title}}</h5>
+          <p class="card-text">${{this.price}}</p>
+        </div>
+        <div class="card-footer text-end">
+          <button class="btn btn-danger btn-sm deleteBtn" data-id="{{this.id}}">Eliminar</button>
+        </div>
+      </div>
+    </div>
   {{/each}}
-</ul>
+</div>
 
-<script src="/socket.io/socket.io.js"></script>
 <script>
   const socket = io();
+  const grid   = document.getElementById('productGrid');
+  const alerts = document.getElementById('alerts');
 
-  // Al recibir un nuevo producto via WebSocket:
+  function showAlert(type, msg) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = 
+      `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+         ${msg}
+         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+       </div>`;
+    alerts.append(wrapper);
+  }
+
   socket.on('new-product', prod => {
-    const li = document.createElement('li');
-    li.setAttribute('data-id', prod.id);
-    li.innerHTML = `${prod.title} - $${prod.price}
-      <button class="deleteBtn" data-id="${prod.id}">Eliminar</button>`;
-    document.getElementById('productList').appendChild(li);
+    // agrego tarjeta al grid…
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.id = `prod-${prod.id}`;
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">${prod.title}</h5>
+          <p class="card-text">$${prod.price}</p>
+        </div>
+        <div class="card-footer text-end">
+          <button class="btn btn-danger btn-sm deleteBtn" data-id="${prod.id}">Eliminar</button>
+        </div>
+      </div>`;
+    grid.append(col);
+    showAlert('success', `Producto "${prod.title}" agregado`);
   });
 
-  // Al recibir eliminación:
   socket.on('delete-product', id => {
-    const item = document.querySelector(`[data-id="${id}"]`);
-    if (item) item.remove();
-  });
-
-  // Formulario: crea producto por HTTP (emitirá new-product automáticamente)
-  document.getElementById('addProductForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target));
-    fetch('/api/products', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
-    e.target.reset();
-  });
-
-  // Botones Eliminar: llama al DELETE (emitirá delete-product)
-  document.getElementById('productList').addEventListener('click', e => {
-    if (e.target.matches('.deleteBtn')) {
-      const id = e.target.dataset.id;
-      fetch(`/api/products/${id}`, { method: 'DELETE' });
+    const el = document.getElementById(`prod-${id}`);
+    if (el) {
+      el.remove();
+      showAlert('warning', `Producto ID ${id} eliminado`);
     }
   });
+
 </script>
