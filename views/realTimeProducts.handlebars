@@ -91,4 +91,48 @@
     }
   });
 
+    // 1) Escucho el submit del formulario de agregar producto
+  document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Recolecto los datos del formulario
+    const formData = new FormData(e.target);
+    const data = {
+      title:       formData.get('title'),
+      description: formData.get('description'),
+      price:       Number(formData.get('price')),
+      code:        formData.get('code'),
+      stock:       Number(formData.get('stock')),
+      category:    formData.get('category'),
+      status:      true,          
+      thumbnails:  []             
+    };
+
+    // Llamada HTTP para agregar el producto
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+      showAlert('danger', `Error al agregar: ${res.statusText}`);
+    }
+    
+    e.target.reset();
+    // Cuando la promesa termine, el servidor emitirá 'new-product'
+  });
+
+  // 2) Delegación de clicks para los botones “Eliminar”
+  grid.addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('deleteBtn')) return;
+    const id = e.target.dataset.id;
+    const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+
+    if (!res.ok) {
+      showAlert('danger', `Error al eliminar: ${res.statusText}`);
+    }
+    // Cuando termine, el servidor emitirá 'delete-product'
+  });
+
 </script>

@@ -1,12 +1,13 @@
 [
   {
-    "id": 2,
-    "title": "Teclado",
-    "description": "HyperX",
-    "price": "10000",
+    "id": 1,
+    "title": "male te amo",
+    "description": "a",
+    "price": 712,
     "thumbnail": [],
-    "code": "123",
-    "category": "God",
-    "stock": "2"
+    "code": "1",
+    "category": "kk",
+    "status": true,
+    "stock": 1
   }
 ]
