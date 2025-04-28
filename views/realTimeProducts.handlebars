@@ -1,28 +1,61 @@
 {{!-- views/realTimeProducts.handlebars --}}
 <h1>Productos en Tiempo Real</h1>
+
+<form id="addProductForm">
+  <input name="title" placeholder="Título" required>
+  <input name="description" placeholder="Descripción" required>
+  <input name="price" type="number" placeholder="Precio" required>
+  <input name="code" placeholder="Código" required>
+  <input name="stock" type="number" placeholder="Stock" required>
+  <input name="category" placeholder="Categoría" required>
+  <button type="submit">Agregar producto</button>
+</form>
+
 <ul id="productList">
   {{#each products}}
-    <li data-id="{{this.id}}">{{this.name}} - ${{this.price}}</li>
+    <li data-id="{{this.id}}">
+      {{this.title}} - ${{this.price}}
+      <button class="deleteBtn" data-id="{{this.id}}">Eliminar</button>
+    </li>
   {{/each}}
 </ul>
 
-<!-- Incluir la librería de cliente Socket.IO -->
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  const socket = io(); // Conecta al servidor Socket.IO
+  const socket = io();
 
-  // Escuchar evento de nuevo producto
-  socket.on('new-product', (prod) => {
-    const list = document.getElementById('productList');
-    const item = document.createElement('li');
-    item.setAttribute('data-id', prod.id);
-    item.textContent = `${prod.name} - $${prod.price}`;
-    list.appendChild(item);
+  // Al recibir un nuevo producto via WebSocket:
+  socket.on('new-product', prod => {
+    const li = document.createElement('li');
+    li.setAttribute('data-id', prod.id);
+    li.innerHTML = `${prod.title} - $${prod.price}
+      <button class="deleteBtn" data-id="${prod.id}">Eliminar</button>`;
+    document.getElementById('productList').appendChild(li);
   });
 
-  // Escuchar evento de eliminación de producto
-  socket.on('delete-product', (id) => {
+  // Al recibir eliminación:
+  socket.on('delete-product', id => {
     const item = document.querySelector(`[data-id="${id}"]`);
     if (item) item.remove();
+  });
+
+  // Formulario: crea producto por HTTP (emitirá new-product automáticamente)
+  document.getElementById('addProductForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    fetch('/api/products', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    e.target.reset();
+  });
+
+  // Botones Eliminar: llama al DELETE (emitirá delete-product)
+  document.getElementById('productList').addEventListener('click', e => {
+    if (e.target.matches('.deleteBtn')) {
+      const id = e.target.dataset.id;
+      fetch(`/api/products/${id}`, { method: 'DELETE' });
+    }
   });
 </script>

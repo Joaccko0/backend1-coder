@@ -11,14 +11,17 @@ const cartsRouter = require('./routes/carts');
 
 app.engine('handlebars', engine({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
+const viewsRouter = require('./routes/views');
 
 const http = require('http');
 const server = http.createServer(app);
 const io = require('socket.io')(server);
+app.set('io', io);
 
 app.use(express.json()); // Para poder trabajar con JSON en el body
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
+app.use('/', viewsRouter);
 
 // Escuchar conexiones de cliente
 io.on('connection', (socket) => {

@@ -30,7 +30,7 @@ router.get('/:pid', async (req, res) => {
 
 // POST / - Agregar un nuevo producto
 router.post('/', async (req, res) => {
-    const { title, description, price, thumbnail, code, stock, category } = req.body;
+    const { title, description, price, thumbnail, code, stock, category, status } = req.body;
 
     if (!title || !description || !price || !code || !stock || !category) {
         return res.status(400).json({ error: 'Faltan campos obligatorios' });
@@ -45,13 +45,14 @@ router.post('/', async (req, res) => {
         price,
         thumbnail: thumbnail || [],
         code,
-        status: status ?? true, // default true si no lo mandan
         category,
+        status,
         stock
     };
 
     try {
         const addedProduct = await productManager.addProduct(newProduct);
+        req.app.get('io').emit('new-product', addedProduct);
         res.status(201).json(addedProduct);
     } catch (err) {
         res.status(500).json({ error: 'Error al agregar producto' });
@@ -84,6 +85,7 @@ router.delete('/:pid', async (req, res) => {
 
     try {
         const deleted = await productManager.deleteProduct(pid);
+        req.app.get('io').emit('delete-product', pid);
         if (!deleted) return res.status(404).json({ error: 'Producto no encontrado' });
         res.json({ message: 'Producto eliminado correctamente' });
     } catch (err) {

@@ -1,13 +1,12 @@
 [
   {
-    "id": 1,
-    "title": "Mouse gamer",
-    "description": "Mouse con luces RGB",
-    "price": 5500,
-    "thumbnail": [
-      "mouse1.png"
-    ],
-    "code": "MOU123",
-    "stock": 20
+    "id": 2,
+    "title": "Teclado",
+    "description": "HyperX",
+    "price": "10000",
+    "thumbnail": [],
+    "code": "123",
+    "category": "God",
+    "stock": "2"
   }
 ]
